@@ -1,5 +1,17 @@
 .user-management {
     padding: 2rem;
-    background-color: #dee2e6;
+    background-color: #f8f9fa;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  button {
+    margin-right: 0.5rem;
   }
   

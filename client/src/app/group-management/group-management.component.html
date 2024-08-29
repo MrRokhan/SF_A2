@@ -1,5 +1,24 @@
 <div class="group-management">
     <h2>Group Management</h2>
-    <!-- Add content and functionality for managing groups -->
+    <button (click)="createGroup()">Create Group</button>
+    <table>
+      <thead>
+        <tr>
+          <th>Group Name</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let group of groups">
+          <td>{{ group.name }}</td>
+          <td>{{ group.description }}</td>
+          <td>
+            <button (click)="editGroup(group)">Edit</button>
+            <button (click)="deleteGroup(group.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
   
