@@ -6,14 +6,15 @@ import { ChannelManagementComponent } from './channel-management/channel-managem
 import { ChatComponent } from './chat/chat.component';
 import { UserManagementComponent } from './user-management/user-management.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
+import { AuthGuard } from './auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'groups', component: GroupManagementComponent },
-  { path: 'channels', component: ChannelManagementComponent },
-  { path: 'chat', component: ChatComponent },
-  { path: 'users', component: UserManagementComponent },
-  { path: 'profile', component: UserProfileComponent },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+  { path: 'groups', component: GroupManagementComponent, canActivate: [AuthGuard] },
+  { path: 'channels', component: ChannelManagementComponent, canActivate: [AuthGuard] },
+  { path: 'chat', component: ChatComponent, canActivate: [AuthGuard] },
+  { path: 'users', component: UserManagementComponent, canActivate: [AuthGuard] },
+  { path: 'profile', component: UserProfileComponent, canActivate: [AuthGuard] },
 ];
