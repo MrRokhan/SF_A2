@@ -1,26 +1,33 @@
-<div class="user-management">
-    <h2>User Management</h2>
-    <button (click)="addUser()">Add User</button>
-    <table>
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.role }}</td>
-          <td>
-            <button (click)="editUser(user)">Edit</button>
-            <button (click)="deleteUser(user.id)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+<div class="container">
+  <h2 class="text-center my-4">User Management</h2>
+
+  <!-- Display Existing Users -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h4 class="card-title">Users</h4>
+    </div>
+    <ul class="list-group list-group-flush">
+      <li *ngFor="let user of users" class="list-group-item d-flex justify-content-between align-items-center">
+        {{ user.username }} ({{ user.email }})
+        <button class="btn btn-danger btn-sm" (click)="deleteUser(user.id)">Delete</button>
+      </li>
+    </ul>
   </div>
-  
+
+  <!-- Form to Create a New User -->
+  <div class="card">
+    <div class="card-header">
+      <h4 class="card-title">Create New User</h4>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <input [(ngModel)]="newUsername" class="form-control" placeholder="Username" />
+      </div>
+      <div class="form-group">
+        <input [(ngModel)]="newEmail" class="form-control" placeholder="Email Address" />
+      </div>
+      <button class="btn btn-success mt-3" (click)="createUser()">Create User</button>
+      <p *ngIf="errorMessage" class="text-danger mt-2">{{ errorMessage }}</p>
+    </div>
+  </div>
+</div>

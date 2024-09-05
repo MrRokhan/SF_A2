@@ -1,5 +1,26 @@
 <div class="channel-management">
-    <h2>Channel Management</h2>
-    <!-- Add content and functionality for managing channels -->
-  </div>
-  
+  <h2>Channel Management</h2>
+
+  <!-- Add/Edit Channel Form -->
+  <form (ngSubmit)="addChannel()">
+    <div>
+      <label for="name">Channel Name:</label>
+      <input id="name" [(ngModel)]="newChannel.name" name="name" required />
+    </div>
+    <div>
+      <label for="description">Description:</label>
+      <input id="description" [(ngModel)]="newChannel.description" name="description" required />
+    </div>
+    <button type="submit">Add Channel</button>
+  </form>
+
+  <!-- Channel List -->
+  <ul>
+    <li *ngFor="let channel of channels">
+      <h3>{{ channel.name }}</h3>
+      <p>{{ channel.description }}</p>
+      <button (click)="editChannel(channel)">Edit</button>
+      <button (click)="deleteChannel(channel.id)">Delete</button>
+    </li>
+  </ul>
+</div>
