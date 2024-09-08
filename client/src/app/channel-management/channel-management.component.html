@@ -1,26 +1,32 @@
-<div class="channel-management">
-  <h2>Channel Management</h2>
+<div class="channel-management-container">
+  <h1>Channel Management</h1>
 
-  <!-- Add/Edit Channel Form -->
-  <form (ngSubmit)="addChannel()">
-    <div>
-      <label for="name">Channel Name:</label>
-      <input id="name" [(ngModel)]="newChannel.name" name="name" required />
-    </div>
-    <div>
-      <label for="description">Description:</label>
-      <input id="description" [(ngModel)]="newChannel.description" name="description" required />
-    </div>
-    <button type="submit">Add Channel</button>
-  </form>
+  <div *ngFor="let channel of channels" class="channel-item">
+    <h3>{{ channel.name }}</h3>
+    <p>{{ channel.description }}</p>
+    <p>Users: {{ getChannelUsers(channel) }}</p>
 
-  <!-- Channel List -->
-  <ul>
-    <li *ngFor="let channel of channels">
-      <h3>{{ channel.name }}</h3>
-      <p>{{ channel.description }}</p>
+    <!-- Edit and Delete buttons for Admins -->
+    <div *ngIf="canEditChannels">
       <button (click)="editChannel(channel)">Edit</button>
       <button (click)="deleteChannel(channel.id)">Delete</button>
-    </li>
-  </ul>
+    </div>
+  </div>
+
+  <!-- Add New Channel Form for Admins -->
+  <div *ngIf="canEditChannels">
+    <h3>Add New Channel</h3>
+    <form (ngSubmit)="addChannel()">
+      <input [(ngModel)]="newChannel.name" name="name" placeholder="Channel Name" required />
+      <input [(ngModel)]="newChannel.description" name="description" placeholder="Channel Description" required />
+      <button type="submit">Add Channel</button>
+    </form>
+  </div>
+
+  <!-- Example: User management within a channel -->
+  <div *ngIf="canManageUsersInChannels">
+    <h3>Manage Users in Channels</h3>
+    <button (click)="addUserToChannel(1, 2)">Add User to Channel</button>
+    <button (click)="removeUserFromChannel(1, 2)">Remove User from Channel</button>
+  </div>
 </div>

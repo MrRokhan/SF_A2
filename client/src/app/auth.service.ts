@@ -1,41 +1,63 @@
-// import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { DataService } from './data.service';  // Import the data service
 
-// @Injectable({
-//   providedIn: 'root',
-// })
-// export class AuthService {
-//   private users = [
-//     { username: 'super', password: '123', role: 'SuperAdmin' },
-//     { username: 'admin', password: '123', role: 'GroupAdmin' },
-//     { username: 'user', password: '123', role: 'User' },
-//   ];
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: 'Super Admin' | 'Group Admin' | 'User';
+}
 
-//   private currentUser: { username: string; role: string } | null = null;
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromLocalStorage());
+  public currentUser = this.currentUserSubject.asObservable();
 
-//   login(username: string, password: string): boolean {
-//     const user = this.users.find(
-//       (u) => u.username === username && u.password === password
-//     );
-//     if (user) {
-//       this.currentUser = { username: user.username, role: user.role };
-//       return true;
-//     }
-//     return false;
-//   }
+  private mockUsers: User[] = [
+    { id: 1, username: 'super', email: 'super@example.com', role: 'Super Admin' },
+    { id: 2, username: 'admin1', email: 'admin1@example.com', role: 'Group Admin' },
+    { id: 3, username: 'user1', email: 'user1@example.com', role: 'User' }
+  ];
 
-//   logout(): void {
-//     this.currentUser = null;
-//   }
+  constructor(private dataService: DataService) { }  // Inject the data service
 
-//   getUser(): { username: string; role: string } | null {
-//     return this.currentUser;
-//   }
+  // Simulate user login
+  login(username: string, password: string): boolean {
+    const user = this.mockUsers.find(u => u.username === username);
 
-//   isAuthenticated(): boolean {
-//     return !!this.currentUser;
-//   }
+    if (user) {
+      this.currentUserSubject.next(user);
+      this.dataService.saveData('currentUser', user);  // Save to "data" file (local storage)
+      return true;
+    }
+    return false;
+  }
 
-//   getRole(): string | null {
-//     return this.currentUser?.role || null;
-//   }
-// }
+  // Logout user
+  logout(): void {
+    this.currentUserSubject.next(null);
+    this.dataService.deleteData('currentUser');  // Remove user from storage
+  }
+
+  // Check if the user is logged in
+  isLoggedIn(): boolean {
+    return !!this.currentUserSubject.value;
+  }
+
+  // Get current user's role
+  getCurrentUserRole(): string | null {
+    return this.currentUserSubject.value?.role || null;
+  }
+
+  // Utility method to check user role
+  hasRole(role: string): boolean {
+    return this.currentUserSubject.value?.role === role;
+  }
+
+  private getUserFromLocalStorage(): User | null {
+    return this.dataService.loadData('currentUser');  // Load user from local storage
+  }
+}

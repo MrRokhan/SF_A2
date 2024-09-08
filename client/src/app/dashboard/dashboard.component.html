@@ -1,10 +1,36 @@
 <div class="dashboard-container">
+  <div class="dashboard-header">
     <h1>Dashboard</h1>
-    <p>Welcome to the Dashboard. Here you can manage your groups, channels, and users.</p>
-    <nav>
-      <a routerLink="/groups">Manage Groups</a>
-      <a routerLink="/channels">Manage Channels</a>
-      <a routerLink="/users">Manage Users</a>
-    </nav>
+    <p>Welcome to your Dashboard. Here you can manage your groups, channels, and users.</p>
   </div>
-  
+
+  <div class="dashboard-section">
+    <h2>My Channels</h2>
+    <ul class="dashboard-list">
+      <li *ngFor="let channel of getUserChannels(currentUser.id)">
+        <div class="list-item">
+          <span class="item-title">{{ channel.name }}</span>
+          <span class="item-description">{{ channel.description }}</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="dashboard-section">
+    <h2>My Groups</h2>
+    <ul class="dashboard-list">
+      <li *ngFor="let group of getUserGroups(currentUser.id)">
+        <div class="list-item">
+          <span class="item-title">{{ group.name }}</span>
+          <span class="item-description">{{ group.description }}</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <nav class="dashboard-nav">
+    <a routerLink="/groups" class="dashboard-link">Manage Groups</a>
+    <a routerLink="/channels" class="dashboard-link">Manage Channels</a>
+    <a routerLink="/users" class="dashboard-link">Manage Users</a>
+  </nav>
+</div>
