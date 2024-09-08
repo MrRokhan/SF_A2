@@ -1,6 +1,8 @@
 <div class="chat-window">
   <div class="message" *ngFor="let message of messages">
-    <strong>{{ message.user }}:</strong> {{ message.content }}
+    <div class="message-bubble">
+      <strong>{{ message.user }}:</strong> {{ message.content }}
+    </div>
   </div>
 </div>
 
