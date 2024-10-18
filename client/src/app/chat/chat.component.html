@@ -1,7 +1,9 @@
 <div class="chat-window">
   <div class="message" *ngFor="let message of messages">
     <div class="message-bubble">
-      <strong>{{ message.user }}:</strong> {{ message.content }}
+      <strong>{{ message.user }}:</strong>
+      <span *ngIf="!message.content.includes('/uploads/')">{{ message.content }}</span>
+      <img *ngIf="message.content.includes('/uploads/')" [src]="message.content" alt="Uploaded image" style="max-width: 200px;"/>
     </div>
   </div>
 </div>
@@ -9,4 +11,7 @@
 <div class="chat-input">
   <input [(ngModel)]="newMessage" placeholder="Type your message here..." />
   <button (click)="sendMessage()">Send</button>
+
+  <input type="file" (change)="onFileSelected($event)" />
+  <button (click)="onSendImage()">Send Image</button>
 </div>

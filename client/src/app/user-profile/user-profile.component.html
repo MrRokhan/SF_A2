@@ -1,5 +1,15 @@
 <div class="user-profile">
-    <h2>User Profile</h2>
-    <!-- Add content and functionality for user profile -->
+  <h2>User Profile</h2>
+
+  <div>
+    <label for="fileUpload">Upload Profile Image:</label>
+    <input type="file" (change)="onFileSelected($event)">
   </div>
-  
+
+  <button (click)="onUpload()">Upload Profile Image</button>
+
+  <div *ngIf="profileImageUrl">
+    <h3>Uploaded Profile Image:</h3>
+    <img [src]="profileImageUrl" alt="Profile Image" style="max-width: 200px;">
+  </div>
+</div>
