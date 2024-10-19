@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ImageUploadService } from '../services/imageUpload.service';
-import { io, Socket } from 'socket.io-client';  // Import Socket.io client
+import { io } from 'socket.io-client';  // Import socket.io-client
 
 @Component({
   selector: 'app-chat',
@@ -11,38 +11,47 @@ import { io, Socket } from 'socket.io-client';  // Import Socket.io client
   standalone: true,
   imports: [CommonModule, FormsModule]
 })
-export class ChatComponent implements OnInit, OnDestroy {
-  messages = [
-    { user: 'john_doe', content: 'Hello everyone!' },
-    { user: 'jane_doe', content: 'Hi John!' }
-  ];
-
+export class ChatComponent implements OnInit {
+  messages: any[] = [];
   newMessage: string = '';
-  selectedFile: File | null = null;
-  username: string = 'current_user';  // Replace with dynamic username
-
-  private socket: Socket | null = null;
+  selectedFile: File | null = null;  
+  username: string = 'current_user';  
+  currentChannel: string = 'General';  // Default channel
+  socket: any;
 
   constructor(private imageUploadService: ImageUploadService) {}
 
   ngOnInit() {
-    // Connect to the Socket.io server
+    // Connect to Socket.io server
     this.socket = io('http://localhost:3000');
 
-    // Listen for chat messages from the server
-    this.socket.on('chatMessage', (message) => {
-      this.messages.push(message);  // Update the chat with the new message
+    // Join the default channel
+    this.socket.emit('joinChannel', { username: this.username, channel: this.currentChannel });
+
+    // Listen for incoming chat messages
+    this.socket.on('chatMessage', (data: any) => {
+      this.messages.push({ user: data.username, content: data.message });
+    });
+
+    // Listen for user join/leave notifications
+    this.socket.on('userJoined', (data: any) => {
+      this.messages.push({ user: 'System', content: `${data.username} joined the channel.` });
+    });
+
+    this.socket.on('userLeft', (data: any) => {
+      this.messages.push({ user: 'System', content: `${data.username} left the channel.` });
     });
   }
 
   sendMessage() {
     if (this.newMessage.trim()) {
-      const message = { user: this.username, content: this.newMessage };
-      
-      // Send the message to the Socket.io server
-      this.socket?.emit('chatMessage', message);
+      // Emit message to server
+      this.socket.emit('chatMessage', {
+        username: this.username,
+        message: this.newMessage,
+        channel: this.currentChannel
+      });
 
-      // Clear the input
       this.newMessage = '';
     }
   }
@@ -60,11 +69,11 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.selectedFile) {
       this.imageUploadService.uploadChatImage(this.selectedFile, this.newMessage, this.username).subscribe(
         (response) => {
-          console.log('Chat image uploaded successfully:', response.filePath);
-          const message = { user: this.username, content: `Sent an image: ${response.filePath}` };
-
-          // Send the image message to the Socket.io server
-          this.socket?.emit('chatMessage', message);
+          this.socket.emit('chatMessage', {
+            username: this.username,
+            message: `Sent an image: ${response.filePath}`,
+            channel: this.currentChannel
+          });
         },
         (error) => {
           console.error('Error uploading chat image:', error);
@@ -74,8 +83,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    // Disconnect the socket when the component is destroyed
-    this.socket?.disconnect();
+  leaveChannel() {
+    this.socket.emit('leaveChannel', { username: this.username, channel: this.currentChannel });
   }
 }
