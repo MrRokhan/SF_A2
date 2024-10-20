@@ -1,93 +1,134 @@
-# A1FinalSF
-
 # Project Documentation
 
 ## 1. Git Repository Organization and Usage
 
 ### Repository Structure:
-- **`src/`**: Contains the Angular frontend source code.
-- **`server/`**: Contains the Node.js server files.
-- **`e2e/`**: Contains end-to-end tests for the Angular application.
-- **`dist/`**: The output directory generated after building the project.
+- **`src/`**: This directory contains the Angular application source code, including components, services, and models.
+  - **`app/`**: Contains the main Angular application, with subdirectories for components, services, and routing.
+    - **`components/`**: Houses individual feature components such as `chat.component.ts`, `login.component.ts`, and `user-management.component.ts`.
+    - **`services/`**: Contains Angular services like `auth.service.ts`, `group.service.ts`, and `imageUpload.service.ts`, which are responsible for handling business logic and API calls.
+    - **`models/`**: Data structures used on the client side (if you create this for consistency).
+  - **`assets/`**: Static files such as images, fonts, and other resources.
+  - **`environments/`**: Environment configurations for development and production.
+
+- **`server/`**: Contains Node.js backend server code that handles API routes, real-time communication with Socket.io, and PeerJS video calling logic.
+  - **`server.js`**: Main server file that configures Express, handles routes for uploads, and manages Socket.io connections.
+  - **`peerServer.js`**: Manages the PeerJS WebRTC server for video calls.
+  - **`uploads/`**: Directory for storing uploaded images for profiles and chat.
+  
+- **`e2e/`**: End-to-end testing folder using Protractor or Cypress for testing the Angular frontend.
+
+- **`dist/`**: Directory containing the compiled and built files after running `ng build`.
 
 ### Git Workflow:
-- We followed a **feature branch workflow**, where each team member worked on separate branches for different features (e.g., `feature/login`, `feature/chat`).
-- Regular **pull requests** were created to merge features into the `main` branch after review.
-- Meaningful **commit messages** were used to keep the history clean.
+- **Branching Strategy**: We adopted a **feature-branch workflow**:
+  - Each new feature (e.g., `chat`, `auth`, `user-management`) was developed on its own branch (e.g., `feature/chat`).
+  - Regular **pull requests** were made to merge completed features into the `main` branch after code reviews.
+  - We used meaningful commit messages for easy tracking (e.g., `feat: add chat functionality`, `fix: resolve user authentication issue`).
+- **Version Control**: The `.gitignore` file excludes unnecessary files like `node_modules/`, `dist/`, and sensitive environment files.
 
 ## 2. Data Structures on Client and Server
 
 ### Client-Side (Angular):
-- **Entities represented as models**:
-  - **Users**: Managed within `login.component.ts` and stored in local storage after login.
-  - **Groups and Channels**: Interactions managed through services such as `group.service.ts`.
+- **Users**: Represented as an object with fields such as `username`, `password`, and `roles` in `login.component.ts` and stored locally using `localStorage`.
+  - Example (in `auth.service.ts`):
+    ```typescript
+    interface User {
+      id: number;
+      username: string;
+      email: string;
+      role: 'Super Admin' | 'Group Admin' | 'User';
+    }
+    ```
+- **Groups and Channels**: Represented by a collection of entities, managed through Angular services like `group.service.ts`, and fetched from the server via REST APIs.
+  - Example (in `group.service.ts`):
+    ```typescript
+    createGroup(group: any): Observable<any> {
+      return this.http.post<any>(this.apiUrl, group);
+    }
+    ```
 
 ### Server-Side (Node.js):
-- **Entities in server.js**:
-  - **Users** and **Channels**: Managed in the `server.js` file, tracking users in channels through Socket.io.
-  - **Uploads**: Handled by the routes `/upload/chat` and `/upload/profile` using Multer for file storage.
+- **Users and Channels**: Managed using a simple in-memory structure within the `server.js` file. Socket.io tracks users joining and leaving channels dynamically.
+  - Example:
+    ```javascript
+    const usersInChannels = {}; // Tracks users in each channel
+    ```
+
+- **File Uploads**: Managed via Multer middleware, which processes image uploads for profiles and chat messages.
+  - Example (in `server.js`):
+    ```javascript
+    const storage = multer.diskStorage({
+      destination: './uploads',
+      filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname);
+      }
+    });
+    ```
 
 ## 3. Client-Server Responsibilities
 
 ### Client-Side Responsibilities:
-- **Services** (`chat.component.ts`, `imageUpload.service.ts`) handle:
-  - Fetching and sending chat messages and images to the server.
-  - Managing video calls with PeerJS.
+- **Chat and Messaging** (`chat.component.ts`):
+  - Sends and receives messages via Socket.io.
+  - Manages real-time interactions and updates UI when new messages are received.
+  - Initiates video calls using PeerJS.
   
+- **User Management** (`user-management.component.ts`):
+  - Allows administrators to create and delete users locally.
+  - Sends API requests for group management via `group.service.ts`.
+
+- **Profile Management** (`user-profile.component.ts`):
+  - Handles profile image uploads and displays the user's profile.
+
 ### Server-Side Responsibilities:
-- **Socket.io** for real-time chat messaging (`server.js`).
-- **REST API** to handle file uploads (`server.js`):
-  - `POST /upload/profile` for profile image upload.
-  - `POST /upload/chat` for chat image uploads.
-- **PeerJS Server** (`peerServer.js`) to manage video calls.
+- **API Endpoints** (`server.js`):
+  - Handles file uploads for profile pictures and chat images via `POST /upload/profile` and `POST /upload/chat`.
+  - Processes and stores images using the Multer package.
+  
+- **Real-Time Communication**:
+  - **Socket.io** manages real-time messaging and notifications (e.g., when a user joins or leaves a channel).
+  - **PeerJS** (`peerServer.js`) facilitates WebRTC-based video calls between users.
 
 ## 4. List of Routes, Parameters, Return Values, and Purpose
 
 ### Client-Side (Angular Routes):
-- **`/login`**: User login.
-- **`/chat`**: Access chat interface after login.
-- **`/profile`**: Manage user profiles, including image uploads.
+- **`/login`**: Route for user login. Checks user credentials and redirects based on role.
+- **`/chat`**: Main chat interface, where users can send messages and make video calls.
+- **`/profile`**: User profile page, allowing profile image upload and display.
 
-### Server-Side (Node.js API Routes):
+### Server-Side (API Routes):
 - **`POST /upload/profile`**: Upload a profile image.
-  - **Params**: `avatar` (file), `username` (string).
-  - **Response**: `{ message: 'Profile image uploaded successfully', filePath }`.
-- **`POST /upload/chat`**: Upload a chat image.
-  - **Params**: `chatImage` (file), `message` (string), `username` (string).
-  - **Response**: `{ message: 'Chat image uploaded successfully', filePath }`.
+  - **Parameters**: `avatar` (file), `username` (string).
+  - **Returns**: `{ message: 'Profile image uploaded successfully', filePath }`
+  
+- **`POST /upload/chat`**: Upload an image for chat.
+  - **Parameters**: `chatImage` (file), `message` (string), `username` (string).
+  - **Returns**: `{ message: 'Chat image uploaded successfully', filePath }`
+
+- **Socket.io Events**:
+  - **`joinChannel`**: Adds a user to a chat channel.
+  - **`chatMessage`**: Sends a chat message to all users in the channel.
 
 ## 5. Angular Architecture: Components, Services, Models, Routes
 
 ### Components:
-- **`login.component.ts`**: Handles user authentication and redirection based on user roles.
-- **`chat.component.ts`**: Displays chat messages, sends messages, and supports image and video chat.
-- **`user-management.component.ts`**: Manages users (create, delete) in the system.
-- **`user-profile.component.ts`**: Allows users to update their profile images.
+- **`login.component.ts`**: Manages user login, redirects based on user roles (Super Admin, Group Admin, User).
+- **`chat.component.ts`**: Displays chat messages, handles real-time messaging and video calls.
+- **`user-management.component.ts`**: Allows administrators to manage users (create, delete).
+- **`user-profile.component.ts`**: Manages profile image uploads and displays the user's current profile picture.
 
 ### Services:
-- **`auth.service.ts`**: Manages authentication and session handling.
-- **`group.service.ts`**: Manages group-related API requests.
-- **`imageUpload.service.ts`**: Handles image uploads for profile and chat.
+- **`auth.service.ts`**: Manages user authentication, login, and session handling.
+- **`group.service.ts`**: Handles group-related API requests (create, delete groups).
+- **`imageUpload.service.ts`**: Manages image uploads for profile pictures and chat images.
 
-### Routes:
-- **`app-route.ts`**: Defines navigation paths for the application, such as `/login`, `/chat`, `/profile`.
-
-## 6. Client-Server Interaction
-
-### Client-Side (Angular):
-- **`chat.component.ts`**: 
-  - Sends messages via Socket.io to the server.
-  - Handles video calls using PeerJS.
-  - Uploads images via the `imageUpload.service.ts` to the server.
-  
-### Server-Side (Node.js):
-- **`server.js`**:
-  - Manages real-time chat using Socket.io and processes incoming messages and user join/leave notifications.
-  - Processes file uploads via REST API endpoints.
-- **`peerServer.js`**:
-  - Handles WebRTC video calls using PeerJS.
-
----
-
-### Conclusion:
-This documentation provides an overview of the structure, data flow, and client-server responsibilities in this project. Each component and service is responsible for specific tasks, and the interaction between the Angular frontend and Node.js backend is facilitated through REST APIs and real-time communication via Socket.io and PeerJS.
+### Models:
+- **User Model** (in `auth.service.ts`):
+  ```typescript
+  interface User {
+    id: number;
+    username: string;
+    email: string;
+    role: 'Super Admin' | 'Group Admin' | 'User';
+  }
