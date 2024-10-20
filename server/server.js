@@ -5,13 +5,11 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');  
 const socketIo = require('socket.io');  
+const { PeerServer } = require('peer');
 
+// Express app setup
 const app = express();
-
-// Enable CORS for all routes
 app.use(cors());
-
-// Middleware for serving static files (images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Configure Multer to save uploaded files
@@ -21,10 +19,10 @@ const storage = multer.diskStorage({
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
-        cb(null, dir);  
+        cb(null, dir);
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);  
+        cb(null, Date.now() + '-' + file.originalname);
     }
 });
 const upload = multer({ storage: storage });
@@ -58,6 +56,9 @@ const io = socketIo(server, {
     }
 });
 
+// PeerJS server for video calls
+const peerServer = PeerServer({ port: 9000, path: '/peerjs' });
+
 // Track users in channels
 const usersInChannels = {};
 
@@ -68,14 +69,10 @@ io.on('connection', (socket) => {
     // Join a channel
     socket.on('joinChannel', ({ username, channel }) => {
         socket.join(channel);
-
-        // Track users in channels
         if (!usersInChannels[channel]) {
             usersInChannels[channel] = [];
         }
         usersInChannels[channel].push(username);
-
-        // Broadcast to all in the channel that a new user has joined
         io.to(channel).emit('userJoined', { username, usersInChannel: usersInChannels[channel] });
         console.log(`${username} joined ${channel}`);
     });
@@ -83,18 +80,22 @@ io.on('connection', (socket) => {
     // Listen for chat messages
     socket.on('chatMessage', ({ username, message, channel }) => {
         console.log(`${username} in ${channel}: ${message}`);
-        // Broadcast to everyone in the channel
         io.to(channel).emit('chatMessage', { username, message });
+    });
+
+    // Video call event
+    socket.on('callUser', ({ peerId, callerId }) => {
+        io.emit('callUser', { peerId, callerId });
+    });
+
+    socket.on('answerCall', (data) => {
+        io.emit('answerCall', data);
     });
 
     // Handle user leaving
     socket.on('leaveChannel', ({ username, channel }) => {
         socket.leave(channel);
-
-        // Remove user from tracking
         usersInChannels[channel] = usersInChannels[channel].filter(user => user !== username);
-
-        // Notify others in the channel
         io.to(channel).emit('userLeft', { username, usersInChannel: usersInChannels[channel] });
         console.log(`${username} left ${channel}`);
     });

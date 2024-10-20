@@ -3,7 +3,7 @@
     <div class="message-bubble">
       <strong>{{ message.user }}:</strong>
       <span *ngIf="!message.content.includes('/uploads/')">{{ message.content }}</span>
-      <img *ngIf="message.content.includes('/uploads/')" [src]="message.content" alt="Uploaded image" style="max-width: 200px;"/>
+      <img *ngIf="message.content.includes('/uploads/')" [src]="message.content" alt="Uploaded image" style="max-width: 200px;" />
     </div>
   </div>
 </div>
@@ -16,4 +16,13 @@
   <button (click)="onSendImage()">Send Image</button>
 
   <button (click)="leaveChannel()">Leave Channel</button>
+</div>
+
+<div class="video-chat">
+  <h3>Video Chat</h3>
+  <p><strong>Your Peer ID:</strong> {{ peerId }}</p>
+  <button (click)="startVideoCall()">Start Video Call</button>
+  
+  <!-- Video elements to display local and remote streams -->
+  <video id="remoteVideo" autoplay playsinline style="width: 300px; border: 1px solid black;"></video>
 </div>
